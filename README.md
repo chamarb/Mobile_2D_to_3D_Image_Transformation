@@ -33,7 +33,7 @@ L'application affiche les résultats de manière interactive pour l'utilisateur 
 
 - **Flutter & Dart** : Framework mobile utilisé pour développer l'application, permettant une interface fluide et intuitive.
 - **TensorFlow Lite** : Utilisé pour exécuter les modèles d'IA localement sur l'appareil, optimisant les performances avec le GPU ou NNAPI.
-- **SmolVLM2 / PaLI-Gemma 2** : Modèles de vision et de langage pour générer des descriptions textuelles des images. Convertis en TensorFlow Lite pour une exécution locale.
+- **PaLI-Gemma 2** : Modèles de vision et de langage pour générer des descriptions textuelles des images. Convertis en TensorFlow Lite pour une exécution locale.
 - **Gaussian Splatting** : Technique de reconstruction 3D utilisée pour créer des modèles 3D interactifs à partir des images.
 - **WebViewer / Moteur de Rendu 3D** : Utilisé pour afficher les modèles 3D interactifs dans l'application.
 
