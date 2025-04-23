@@ -57,3 +57,74 @@ L'application affiche les résultats de manière interactive pour l'utilisateur 
 2. Installez les dépendances Flutter :
    ```bash
    flutter pub get
+
+############################################
+# Structure du Projet
+
+## BACKEND (FastAPI)
+Chemin : `backend/`
+
+| Élément                | Rôle                                                                 |
+|------------------------|----------------------------------------------------------------------|
+| `main.py`              | Fichier principal FastAPI. Définit les routes, initialise l’application, configure CORS, etc. |
+| `requirements.txt`     | Contient les dépendances nécessaires : `fastapi`, `uvicorn`, `torch`, `transformers`, etc. |
+| `sam_vit_b_01ec64.pth` | Poids du modèle SAM (Segment Anything) pour la segmentation d’objet. |
+| `__pycache__/`         | Cache Python automatique (ignorable dans l’analyse fonctionnelle). |
+
+### 📁 models/
+
+| Fichier        | Description                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| `processing.py`| Contient les fonctions principales de traitement : segmentation avec SAM, description avec PaLI-Gemma, reconstruction 3D (nuage de points ou `.glb`), etc. C’est le cœur de la logique de traitement. |
+
+### 📁 routes/
+
+| Fichier               | Description                                                               |
+|-----------------------|---------------------------------------------------------------------------|
+| `image_processing.py` | Définit les routes API pour : upload d’image, traitement, retour de la description, chemin du modèle 3D. Utilise les fonctions de `models/processing.py`. |
+
+### 📁 static/
+
+| Dossier/Fichier            | Description                                                                 |
+|----------------------------|-----------------------------------------------------------------------------|
+| `uploads/`                 | Dossier où sont enregistrées les images originales, les images segmentées, et les modèles 3D (`.glb`, `.ply`) générés pour chaque image. |
+| `3d_viewer/model_viewer.html` | Une page HTML utilisant `<model-viewer>` ou `three.js` pour visualiser les modèles 3D dans le navigateur ou WebView Flutter. |
+
+### 📁 utils/
+
+| Fichier         | Description                                                                 |
+|-----------------|-----------------------------------------------------------------------------|
+| `image_utils.py`| Contient des fonctions utilitaires pour manipuler les fichiers images : redimensionnement, suppression de fond, conversions, etc. Appelé par `processing.py`. |
+
+---
+
+## FRONTEND (Flutter)
+Chemin : `flutter_app/`
+
+### 📄 `main.dart`
+
+Point d’entrée principal de l’app Flutter.
+Initialise l’application et appelle les écrans (`home_screen`, `result_screen`).
+
+### 📁 screens/
+
+| Fichier             | Description                                                                |
+|---------------------|----------------------------------------------------------------------------|
+| `home_screen.dart`  | Interface pour choisir une image via `image_picker`, puis l’envoyer au backend. |
+| `result_screen.dart`| Affiche la description générée + une WebView du modèle 3D (`model_viewer.html`). |
+
+### 📁 services/
+
+| Fichier            | Description                                                                |
+|--------------------|----------------------------------------------------------------------------|
+| `api_service.dart` | Contient les fonctions HTTP : upload d’image, récupération du lien de résultat, parsing du JSON. Utilisé dans `home_screen.dart` et `result_screen.dart`. |
+
+### 📁 widgets/
+
+| Fichier                    | Description                                                                 |
+|----------------------------|-----------------------------------------------------------------------------|
+| `image_picker_widget.dart` | Widget réutilisable pour sélectionner une image depuis la galerie. Utilisé dans `home_screen.dart`. |
+
+---
+
+
