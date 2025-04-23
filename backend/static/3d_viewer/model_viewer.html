@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #1e1e1e;
+    }
+    canvas, model-viewer {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <script type="module">
+    const modelFile = new URLSearchParams(window.location.search).get("model");
+
+    if (!modelFile) {
+      alert("No model file specified!");
+      throw new Error("Model parameter missing in URL");
+    }
+
+    const ext = modelFile.split('.').pop().toLowerCase();
+    const modelPath = `/static/uploads/${modelFile}`;
+
+    if (ext === "glb" || ext === "gltf") {
+      const modelViewer = document.createElement('model-viewer');
+      modelViewer.setAttribute('src', modelPath);
+      modelViewer.setAttribute('camera-controls', '');
+      modelViewer.setAttribute('auto-rotate', '');
+      modelViewer.setAttribute('exposure', '1.5');
+      modelViewer.setAttribute('shadow-intensity', '1');
+      modelViewer.setAttribute('alt', '3D model');
+      modelViewer.setAttribute('environment-image', 'neutral');
+      modelViewer.setAttribute('shadow-softness', '0.8');
+      modelViewer.setAttribute('tone-mapping', 'aces');
+      document.body.appendChild(modelViewer);
+    } else if (ext === "ply") {
+      // Use Three.js for .ply visualization
+      import('https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js').then(THREE => {
+        import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/PLYLoader.js').then(({ PLYLoader }) => {
+          import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/controls/OrbitControls.js').then(({ OrbitControls }) => {
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1e1e1e);
+
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
+            camera.position.set(0, 0, 2);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(2, 2, 2);
+            scene.add(directionalLight);
+
+            const loader = new PLYLoader();
+            loader.load(modelPath, geometry => {
+              geometry.computeVertexNormals();
+              const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
+              const mesh = new THREE.Points(geometry, material);
+              scene.add(mesh);
+
+              function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+              }
+
+              animate();
+            });
+          });
+        });
+      });
+    } else {
+      alert("Unsupported model format! Supported formats: .ply, .glb, .gltf");
+    }
+  </script>
+</body>
+</html>

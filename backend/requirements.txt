@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pillow
+torch
+opencv-python
+transformers
+segment-anything
+open3d
