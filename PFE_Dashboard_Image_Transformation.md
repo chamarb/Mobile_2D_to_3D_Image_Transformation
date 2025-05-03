@@ -88,13 +88,7 @@ This section compares the **SmolVLM2** and **PaLI-Gemma2** models based on key p
 - **VRAM Needed (GB)**
 - **Inference Speed (s/img)**
 
-**Comparison Graph:**
-```python
-go.Figure([
-    go.Bar(name='Model Size (GB)', x=['SmolVLM2', 'PaLI-Gemma2'], y=[2.2, 10]),
-    go.Bar(name='VRAM Needed (GB)', x=['SmolVLM2', 'PaLI-Gemma2'], y=[8, 40]),
-    go.Bar(name='Inference Speed (s/img)', x=['SmolVLM2', 'PaLI-Gemma2'], y=[2, 7])
-])
+
 ## 🔚 Conclusion
 
 In the final section, we wrap up the project, highlighting the key achievements and next steps.
