@@ -33,115 +33,119 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _uploadImage(File image) async {
-    setState(() {
-      _isUploading = true;
-    });
+    setState(() => _isUploading = true);
 
     try {
-      var response = await ApiService().uploadImage(image);
+      final response = await ApiService().uploadImage(image);  // Modify as per your backend API
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ResultScreen(
               description: response["result"]["description"] ?? "No description available",
-              imageUrl: "http://192.168.0.18:8000/static/uploads/${response['result']['segmented_image']}",
-              modelUrl: "http://192.168.0.18:8000/static/uploads/${response['result']['model_file']}",
+              imageUrl: "http://192.168.1.60:8000/static/uploads/${response['result']['segmented_image']}",
+              modelUrl: "http://192.168.1.60:8000/static/uploads/${response['result']['model_file']}"
             ),
           ),
-        );
+        ).then((_) {
+          setState(() => _imageFile = null);
+        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("❌ Error uploading image: $e")),
       );
     } finally {
-      setState(() {
-        _isUploading = false;
-      });
+      setState(() => _isUploading = false);
     }
+  }
+
+  Widget _buildImagePreview() {
+    return _imageFile != null
+        ? Hero(
+            tag: 'uploaded-image',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.file(
+                _imageFile!,
+                height: 250,
+                width: 250,
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
+        : Column(
+            children: const [
+              Icon(Icons.image_search, size: 120, color: Colors.white70),
+              SizedBox(height: 10),
+              Text(
+                "No image selected",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ],
+          );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurple[700],
       appBar: AppBar(
-        title: const Text("Image Processing App"),
+        title: const Text("Image Processor AI"),
         backgroundColor: Colors.deepPurple,
         elevation: 0,
+        centerTitle: true,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.deepPurple, Colors.blueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _imageFile != null
-                  ? Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.file(_imageFile!, height: 200),
-                      ),
-                    )
-                  : const Text(
-                      "No image selected",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-              const SizedBox(height: 20),
-              _isUploading
-                  ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.blue))
-                  : _buildImagePickerButtons(),
-            ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  child: _buildImagePreview(),
+                ),
+                const SizedBox(height: 40),
+                _isUploading
+                    ? Column(
+                        children: const [
+                          CircularProgressIndicator(color: Colors.white),
+                          SizedBox(height: 10),
+                          Text("Uploading & Processing...", style: TextStyle(color: Colors.white)),
+                        ],
+                      )
+                    : _buildButtons(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildImagePickerButtons() {
+  Widget _buildButtons() {
     return Column(
       children: [
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purple,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-          ),
-          onPressed: () => _pickImage(ImageSource.gallery),
-          icon: const Icon(Icons.photo_album),
-          label: const Text(
-            "📂 Pick Image from Gallery",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        const SizedBox(height: 20 ),
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purple,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-          ),
-          onPressed: () => _pickImage(ImageSource.camera),
-          icon: const Icon(Icons.camera_alt),
-          label: const Text(
-            "📸 Take a Picture",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
+        _buildButton("📂 Pick from Gallery", Icons.photo_album, () => _pickImage(ImageSource.gallery)),
+        const SizedBox(height: 20),
+        _buildButton("📸 Take a Picture", Icons.camera_alt, () => _pickImage(ImageSource.camera)),
       ],
+    );
+  }
+
+  Widget _buildButton(String text, IconData icon, VoidCallback onPressed) {
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white24,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+      ),
+      onPressed: onPressed,
+      icon: Icon(icon, size: 24),
+      label: Text(text, style: const TextStyle(fontSize: 16)),
     );
   }
 }
